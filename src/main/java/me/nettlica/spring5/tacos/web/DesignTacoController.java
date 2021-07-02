@@ -2,8 +2,11 @@ package me.nettlica.spring5.tacos.web;
 
 import lombok.extern.slf4j.Slf4j;
 import me.nettlica.spring5.tacos.Ingredient;
+import me.nettlica.spring5.tacos.Taco;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Arrays;
@@ -19,6 +22,7 @@ import me.nettlica.spring5.tacos.Ingredient.Type;
 @RequestMapping("/design")
 public class DesignTacoController {
 
+    @GetMapping
     public String showDesignForm(Model model) {
 
         List<Ingredient> ingredientList = ingredientList();
@@ -28,7 +32,18 @@ public class DesignTacoController {
 
         typeListMap.keySet().stream().forEach(k->model.addAttribute(k.toString().toLowerCase(Locale.ROOT), typeListMap.get(k)));
 
+        System.out.println(model);
+
+        model.addAttribute("taco", new Taco());
+
         return "design";
+    }
+
+    @PostMapping
+    public String processDesign(Taco design) {
+        log.info("Processing design:{}", design);
+
+        return "redirect:/orders/current";
     }
 
     public static List<Ingredient>  ingredientList(){
