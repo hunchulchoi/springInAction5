@@ -5,6 +5,7 @@ import me.nettlica.spring5.tacos.Ingredient;
 import me.nettlica.spring5.tacos.Taco;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import me.nettlica.spring5.tacos.Ingredient.Type;
+
+import javax.validation.Valid;
 
 @Slf4j
 @Controller
@@ -32,7 +35,7 @@ public class DesignTacoController {
 
         typeListMap.keySet().stream().forEach(k->model.addAttribute(k.toString().toLowerCase(Locale.ROOT), typeListMap.get(k)));
 
-        System.out.println(model);
+        log.debug("model: {}", model);
 
         model.addAttribute("taco", new Taco());
 
@@ -40,8 +43,18 @@ public class DesignTacoController {
     }
 
     @PostMapping
-    public String processDesign(Taco design) {
-        log.info("Processing design:{}", design);
+    public String processDesign(@Valid Taco design, Errors errors, Model model) {
+        log.info("Processing design:{}, {}, {}", design, errors, errors.hasErrors());
+
+        if(errors.hasErrors()){
+            errors.getAllErrors().stream().forEach(e-> log.error("{}: {}", e.getCode(), e.getDefaultMessage()));
+
+            Map<Type, List<Ingredient>> typeListMap = ingredientList().stream().collect(Collectors.groupingBy(Ingredient::getType));
+
+            typeListMap.keySet().stream().forEach(k->model.addAttribute(k.toString().toLowerCase(Locale.ROOT), typeListMap.get(k)));
+
+            return "design";
+        }
 
         return "redirect:/orders/current";
     }
